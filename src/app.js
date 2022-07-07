@@ -44,37 +44,39 @@ App = {
         };
 
         web3 = new Web3(new Web3.providers.HttpProvider('http://localhost:7545', options));
+        window.web3 = web3
+        App.web3Provider = web3.currentProvider
 
-        if (window.ethereum) {
-            window.web3 = new Web3(ethereum)
-            try {
-                // Request account access if needed
-                await ethereum.enable()
-                // Acccounts now exposed
-                web3.eth.sendTransaction({/* ... */ })
-            } catch (error) {
-                // User denied account access...
-            }
-        }
-        // Legacy dapp browsers...
-        else if (window.web3) {
-            App.web3Provider = web3.currentProvider
-            window.web3 = new Web3(web3.currentProvider)
-            // Acccounts always exposed
-            //  web3.eth.sendTransaction({/* ... */})
-        }
-        // Non-dapp browsers...
-        else {
-            console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
-        }
-        console.log("Web3 Service Provider");
+        // if (window.ethereum) {
+        //     window.web3 = new Web3(ethereum)
+        //     try {
+        //         // Request account access if needed
+        //         await ethereum.enable()
+        //         // Acccounts now exposed
+        //         web3.eth.sendTransaction({/* ... */ })
+        //     } catch (error) {
+        //         // User denied account access...
+        //     }
+        // }
+        // // Legacy dapp browsers...
+        // else if (window.web3) {
+        //     App.web3Provider = web3.currentProvider
+        //     window.web3 = new Web3(web3.currentProvider)
+        //     // Acccounts always exposed
+        //     //  web3.eth.sendTransaction({/* ... */})
+        // }
+        // // Non-dapp browsers...
+        // else {
+        //     console.log('Non-Ethereum browser detected. You should consider trying MetaMask!')
+        // }
+        // console.log("Web3 Service Provider");
         console.log(App.web3Provider);
     },
     loadAccount: async () => {
         let temp = await web3.eth.getAccounts();
         web3.eth.Contract.defaultAccount = temp[0];
         web3.eth.defaultHardfork = 'petersburg';
-        console.log(web3.eth.Contract.defaultAccount);
+        // console.log(web3.eth.Contract.defaultAccount);
         App.account = temp[0];
     },
 
@@ -83,14 +85,12 @@ App = {
         const todoList = await fetch('todo_list.json')
         let tmp = await todoList.json()
         console.log(tmp.abi);
-        // console.log(JSON.parse(tmp));
+
+        //Replace contract in below statment 
+        // new web3.eth.Contract(tmp.abi, ["your contract address"])
         App.TodoList = new web3.eth.Contract(tmp.abi, "0xdfc8bF6D247132f443dFE78C22B33db6654E7d79");
         App.TodoList.setProvider(App.web3Provider)
         App.TodoList.DefaultChain = "MUIRGLACIER";
-
-        // tmp = await App.TodoList.methods.getTask(1).call();
-        // console.log("Task ");
-        // console.log(tmp);
 
         console.log(App.TodoList);
 
@@ -118,10 +118,7 @@ App = {
         App.dsiplayLoading();
 
         let gas = await App.TodoList.methods.addTask(task).estimateGas({ gas: 5000000 });
-        console.log(gas);
         let tmp = await App.TodoList.methods.addTask(task).send({ from: App.account, gas: gas });
-        console.log("New task added");
-        console.log(tmp);
         App.hideLoading();
         App.load();
 
@@ -132,10 +129,7 @@ App = {
         App.dsiplayLoading();
 
         let gas = await App.TodoList.methods.completeTask(id).estimateGas({ gas: 5000000 });
-        console.log(gas);
         let tmp = await App.TodoList.methods.completeTask(id).send({ from: App.account, gas: gas });
-        console.log(`Tasked mark as Done`);
-        console.log(tmp);
         App.hideLoading();
         App.load();
 
@@ -185,23 +179,19 @@ App = {
         document.querySelector("#context").style.display = "block";
     },
 
-    myTransaction: async () => {
+    //Transaction function just for Demo pourpose
+    // myTransaction: async () => {
 
-        // App.tmp = await web3.eth.accounts.create();
-        // App.tmp = await web3.utils.randomHex(32);
-        console.log("New Account ");
-        console.log(App.tmp);
-        web3.eth.sendTransaction({
-            from: App.account,
-            gasPrice: "20000000000",
-            gas: "6721975",
-            // to: '0x5c4b3debA9645b2435D7714fF38E50b20e67717c',
-            to: "0x6a0EDe6678245a52601aA510CF041ddFa01f45D1",
-            value: "1000000000000000000",
-            data: web3.utils.toHex('First Transaction')
-        }, 'c3c434e80c3584dbf02b817bc8aca01cc82416bd864591f7769de2b071ee3324')
-            .then(console.log);
-    },
+    //     web3.eth.sendTransaction({
+    //         from: App.account,
+    //         gasPrice: "20000000000",
+    //         gas: "6721975",
+    //         to: "0x6a0EDe6678245a52601aA510CF041ddFa01f45D1",
+    //         value: "1000000000000000000",
+    //         data: web3.utils.toHex('First Transaction')
+    //     }, 'c3c434e80c3584dbf02b817bc8aca01cc82416bd864591f7769de2b071ee3324')
+    //         .then(console.log);
+    // },
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -237,6 +227,3 @@ function DisplayMsg() {
         })
     }
 }
-
-
-// App.load();
